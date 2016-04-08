@@ -26,8 +26,8 @@ res = 0
 range = Range.new(*File.read('id-range').rstrip.split('-').map(&:to_i))
 
 # open all the rule files
-Dir.chdir("../../")
-Dir["**/*.conf"].each do |rulefile|
+Dir.chdir('../../')
+Dir['**/*.conf'].each do |rulefile|
   # read the content
   content = File.read(rulefile)
 
@@ -43,7 +43,7 @@ Dir["**/*.conf"].each do |rulefile|
     line = (prevline + line) unless prevline.nil?
 
     # remove comments
-    line.gsub!(/^([^'"]|'[^']+'|"[^"]+")#.*/) { $1 }
+    line.gsub!(/^([^'"]|'[^']+'|"[^"]+")#.*/) { Regexp.last_match(1) }
 
     if line =~ /\\\n$/
       prevline = line.gsub(/\\\n/, '')
@@ -67,20 +67,18 @@ Dir["**/*.conf"].each do |rulefile|
 
     # skip if it's not a SecRule or SecAction
     case directive[0]
-    when "SecRule"
+    when 'SecRule'
       rawrule = directive[3]
-    when "SecAction"
+    when 'SecAction'
       rawrule = directive[1]
     else
       next
     end
 
     # get the rule and split in its components
-    rule = (rawrule || "").gsub(/(?:^"|"$)/, '').split(/\s*,\s*/)
+    rule = (rawrule || '').gsub(/(?:^"|"$)/, '').split(/\s*,\s*/)
 
-    if rule.include?("chain")
-      next_chained = true
-    end
+    next_chained = true if rule.include?('chain')
 
     ids = rule.find_all { |piece| piece =~ /^id:/ }
     if ids.size > 1
@@ -102,7 +100,7 @@ Dir["**/*.conf"].each do |rulefile|
       $stderr.puts "#{rulefile}:#{lineno} rule missing id (#{rule.join(',')})"
       res = 1
       next
-    elsif ! range.include?(id)
+    elsif !range.include?(id)
       $stderr.puts "#{rulefile}:#{lineno} rule with id #{id} outside of reserved range #{range}"
       res = 1
     elsif seen_ids.include?(id)

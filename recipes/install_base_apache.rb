@@ -1,13 +1,13 @@
 # install package common to package and source install
 case node[:platform_family]
 when 'rhel', 'fedora', 'suse'
-  packages = %w[apr apr-util pcre-devel libxml2-devel curl-devel]
+  packages = %w(apr apr-util pcre-devel libxml2-devel curl-devel)
 when 'debian'
-  packages = %w[libapr1 libaprutil1 libpcre3 libxml2 libcurl3]
+  packages = %w(libapr1 libaprutil1 libpcre3 libxml2 libcurl3)
 when 'arch'
-  packages = %w[apr apr-util pcre libxml2 lib32-curl]
+  packages = %w(apr apr-util pcre libxml2 lib32-curl)
 when 'freebsd'
-  packages = %w[apr pcre-8.33 libxml2 curl]
+  packages = %w(apr pcre-8.33 libxml2 curl)
 else
   Chef::Log.fatal("Unsupported platform: #{node[:platform_family]}.")
   fail 'mod_security cookbook does not support this platform'
@@ -20,7 +20,6 @@ packages.each { |p| package p }
 directory node[:mod_security][:dir] do
   recursive true
 end
-
 
 if node[:mod_security][:from_source]
   # COMPILE FROM SOURCE
@@ -50,7 +49,6 @@ if node[:mod_security][:from_source]
     end
   end
 
-
   # Download and compile mod_security from source
 
   source_code_tar_file = "#{Chef::Config[:file_cache_path]}/#{node[:mod_security][:source_file]}"
@@ -62,7 +60,7 @@ if node[:mod_security][:from_source]
     backup false
     not_if do
       # FIXME: Only checks for the existence of the module file. Doesn't check the version of the module is as specified.
-      File.exists?("#{node[:mod_security][:source_module_path]}/#{node[:mod_security][:source_module_name]}")
+      File.exist?("#{node[:mod_security][:source_module_path]}/#{node[:mod_security][:source_module_name]}")
     end
     notifies :create, 'ruby_block[validate_tarball_checksum]', :immediately
   end
@@ -107,7 +105,7 @@ if node[:mod_security][:from_source]
     action :nothing
   end
 
-  libdir="#{node[:mod_security][:source_module_path]}"
+  libdir = "#{node[:mod_security][:source_module_path]}"
 
 else
 
@@ -125,11 +123,10 @@ else
   end
 
   # Both node attributes are used in the wild. libexec_dir seems to be the newer convention
-  libdir="#{node['apache']['libexec_dir']}"
-  libdir="#{node['apache']['libexecdir']}" if libdir.nil? || libdir.empty?
+  libdir = "#{node['apache']['libexec_dir']}"
+  libdir = "#{node['apache']['libexecdir']}" if libdir.nil? || libdir.empty?
 
 end
-
 
 # setup apache module loading
 apache_module 'unique_id'
@@ -141,8 +138,8 @@ template "#{node[:apache][:dir]}/mods-available/mod-security.load" do
   mode 0644
   # backup false
   variables(
-    :libdir => libdir
-   )
+    libdir: libdir
+  )
   notifies :restart, 'service[apache2]', :delayed
 end
 
@@ -163,7 +160,7 @@ apache_module 'mod-security' do
   module_path "#{libdir}/#{node[:mod_security][:source_module_name]}"
 end
 
-cookbook_file "unicode.mapping" do
+cookbook_file 'unicode.mapping' do
   path "#{node[:mod_security][:dir]}/unicode.mapping"
   action :create
   notifies :restart, 'service[apache2]', :delayed
@@ -184,7 +181,7 @@ template 'modsecurity.conf' do
 end
 
 # Restore SE linux context audit log
-execute "Restore SE Linux context audit log" do
+execute 'Restore SE Linux context audit log' do
   command "chcon -t #{node[:mod_security][:audit_context]} '#{node[:mod_security][:audit_log]}'"
   only_if { File.exist?('/selinux/status') && File.exist?("#{node[:mod_security][:audit_log]}") }
 end
