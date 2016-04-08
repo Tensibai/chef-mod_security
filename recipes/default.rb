@@ -32,7 +32,7 @@ if node[:mod_security][:install_custom]
 end
 
 if !node[:mod_security][:mlogc][:consoleuri].nil?
-  template "#{node[:mod_security][:dir]}/mlogc.conf" do
+  template "#{node[:mod_security][:audit_dir]}/mlogc.conf" do
     source 'mlogc.conf.erb'
     mode "0644"
   end

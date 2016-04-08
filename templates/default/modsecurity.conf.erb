@@ -193,7 +193,7 @@ SecAuditLog <%= node[:mod_security][:audit_log] %>
 <%- if node[:mod_security][:audit_log_type] == "Concurrent" %>
 SecAuditLogStorageDir <%= node[:mod_security][:audit_dir] %>/<%=  %>
 # Pipe audit log to mlogc with your configuration
-SecAuditLog2 "|<%= node[:mod_security][:mlogc][:bin] %> <%= node[:mod_security][:dir] %>/mlogc.conf"
+SecAuditLog2 "|<%= node[:mod_security][:mlogc][:bin] %> <%= node[:mod_security][:audit_dir] %>/mlogc.conf"
 <%- end %>
 
 
