@@ -21,6 +21,11 @@ directory node[:mod_security][:dir] do
   recursive true
 end
 
+directory node[:mod_security][:audit_dir] do
+  group node['apache']['group']
+  mode "0775"
+end
+
 if node[:mod_security][:from_source]
   # COMPILE FROM SOURCE
 
